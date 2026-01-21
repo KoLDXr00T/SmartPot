@@ -1,6 +1,8 @@
 package plugins
 
+
 import (
+	"os/exec"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -79,15 +81,31 @@ const (
 	ASSISTANT
 )
 
+
+func (llmHoneypot *LLMHoneypot) pythonHFCaller(command string) (string, error) {
+	cmd := exec.Command("python3", "plugins/python_hf.py")
+	cmd.Stdin = strings.NewReader(command)
+
+	out, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+
+	return string(out), nil
+}
+
+
+
 func (role Role) String() string {
 	return [...]string{"system", "user", "assistant"}[role]
 }
 
-type LLMProvider int
 
+type LLMProvider int
 const (
 	Ollama LLMProvider = iota
 	OpenAI
+	PythonHF
 )
 
 func FromStringToLLMProvider(llmProvider string) (LLMProvider, error) {
@@ -96,6 +114,8 @@ func FromStringToLLMProvider(llmProvider string) (LLMProvider, error) {
 		return Ollama, nil
 	case "openai":
 		return OpenAI, nil
+	case "python-hf":
+		return PythonHF, nil
 	default:
 		return -1, fmt.Errorf("provider %s not found, valid providers: ollama, openai", llmProvider)
 	}
@@ -373,6 +393,10 @@ func (llmHoneypot *LLMHoneypot) executeModel(prompt []Message) (string, error) {
 		return llmHoneypot.ollamaCaller(prompt)
 	case OpenAI:
 		return llmHoneypot.openAICaller(prompt)
+	case PythonHF:
+		// last user message is the command
+		last := prompt[len(prompt)-1].Content
+		return llmHoneypot.pythonHFCaller(last)
 	default:
 		return "", fmt.Errorf("provider %d not found, valid providers: ollama, openai", llmHoneypot.Provider)
 	}
