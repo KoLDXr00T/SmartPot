@@ -117,7 +117,7 @@ func FromStringToLLMProvider(llmProvider string) (LLMProvider, error) {
 	case "python-hf":
 		return PythonHF, nil
 	default:
-		return -1, fmt.Errorf("provider %s not found, valid providers: ollama, openai", llmProvider)
+		return -1, fmt.Errorf("provider %s not found, valid providers: ollama, openai, python-hf", llmProvider)
 	}
 }
 
@@ -398,7 +398,7 @@ func (llmHoneypot *LLMHoneypot) executeModel(prompt []Message) (string, error) {
 		last := prompt[len(prompt)-1].Content
 		return llmHoneypot.pythonHFCaller(last)
 	default:
-		return "", fmt.Errorf("provider %d not found, valid providers: ollama, openai", llmHoneypot.Provider)
+		return "", fmt.Errorf("provider %d not found, valid providers: ollama, openai, python-hf", llmHoneypot.Provider)
 	}
 }
 
