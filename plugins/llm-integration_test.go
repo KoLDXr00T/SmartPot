@@ -124,7 +124,7 @@ func TestBuildInputValidationPromptDefault(t *testing.T) {
 func TestBuildInputValidationPromptCustom(t *testing.T) {
 
 	llmHoneypot := LLMHoneypot{
-		Protocol: tracer.SSH,
+		Protocol:              tracer.SSH,
 		InputValidationPrompt: "test",
 	}
 
@@ -148,7 +148,7 @@ func TestBuildOutputValidationPromptDefault(t *testing.T) {
 	assert.Equal(t, prompt[0].Role, SYSTEM.String())
 
 	llmHoneypot = LLMHoneypot{
-		Protocol: tracer.HTTP,
+		Protocol:               tracer.HTTP,
 		OutputValidationPrompt: "test",
 	}
 
@@ -605,11 +605,11 @@ func TestIsInputValidFailValidation(t *testing.T) {
 	)
 
 	llmHoneypot := LLMHoneypot{
-		Histories:    make([]Message, 0),
-		OpenAIKey:    "sdjdnklfjndslkjanfk",
-		Protocol:     tracer.SSH,
-		Model:        "gpt-4o",
-		Provider:     OpenAI,
+		Histories:             make([]Message, 0),
+		OpenAIKey:             "sdjdnklfjndslkjanfk",
+		Protocol:              tracer.SSH,
+		Model:                 "gpt-4o",
+		Provider:              OpenAI,
 		InputValidationPrompt: "test input validation",
 	}
 
@@ -651,11 +651,11 @@ func TestIsInputValidPassValidation(t *testing.T) {
 	)
 
 	llmHoneypot := LLMHoneypot{
-		Histories:    make([]Message, 0),
-		OpenAIKey:    "sdjdnklfjndslkjanfk",
-		Protocol:     tracer.SSH,
-		Model:        "gpt-4o",
-		Provider:     OpenAI,
+		Histories:             make([]Message, 0),
+		OpenAIKey:             "sdjdnklfjndslkjanfk",
+		Protocol:              tracer.SSH,
+		Model:                 "gpt-4o",
+		Provider:              OpenAI,
 		InputValidationPrompt: "test input validation",
 	}
 
@@ -696,11 +696,11 @@ func TestIsOutputValidFailValidation(t *testing.T) {
 	)
 
 	llmHoneypot := LLMHoneypot{
-		Histories:    make([]Message, 0),
-		OpenAIKey:    "sdjdnklfjndslkjanfk",
-		Protocol:     tracer.SSH,
-		Model:        "gpt-4o",
-		Provider:     OpenAI,
+		Histories:              make([]Message, 0),
+		OpenAIKey:              "sdjdnklfjndslkjanfk",
+		Protocol:               tracer.SSH,
+		Model:                  "gpt-4o",
+		Provider:               OpenAI,
 		OutputValidationPrompt: "test output validation",
 	}
 
@@ -742,11 +742,11 @@ func TestIsOutputValidPassValidation(t *testing.T) {
 	)
 
 	llmHoneypot := LLMHoneypot{
-		Histories:    make([]Message, 0),
-		OpenAIKey:    "sdjdnklfjndslkjanfk",
-		Protocol:     tracer.SSH,
-		Model:        "gpt-4o",
-		Provider:     OpenAI,
+		Histories:              make([]Message, 0),
+		OpenAIKey:              "sdjdnklfjndslkjanfk",
+		Protocol:               tracer.SSH,
+		Model:                  "gpt-4o",
+		Provider:               OpenAI,
 		OutputValidationPrompt: "test output validation",
 	}
 
@@ -787,13 +787,13 @@ func TestExecuteModelFailInputValidation(t *testing.T) {
 	)
 
 	llmHoneypot := LLMHoneypot{
-		Histories:    make([]Message, 0),
-		OpenAIKey:    "sdjdnklfjndslkjanfk",
-		Protocol:     tracer.SSH,
-		Model:        "gpt-4o",
-		Provider:     OpenAI,
+		Histories:              make([]Message, 0),
+		OpenAIKey:              "sdjdnklfjndslkjanfk",
+		Protocol:               tracer.SSH,
+		Model:                  "gpt-4o",
+		Provider:               OpenAI,
 		InputValidationEnabled: true,
-		InputValidationPrompt: "test input validation",
+		InputValidationPrompt:  "test input validation",
 	}
 
 	openAIGPTVirtualTerminal := InitLLMHoneypot(llmHoneypot)
@@ -872,17 +872,16 @@ func TestExecuteModelPassInputValidationFailOutputValidation(t *testing.T) {
 	)
 
 	llmHoneypot := LLMHoneypot{
-		Histories:    make([]Message, 0),
-		OpenAIKey:    "sdjdnklfjndslkjanfk",
-		Protocol:     tracer.SSH,
-		Model:        "gpt-4o",
-		Provider:     OpenAI,
-		CustomPrompt: "custom prompt",
-		InputValidationEnabled: true,
+		Histories:               make([]Message, 0),
+		OpenAIKey:               "sdjdnklfjndslkjanfk",
+		Protocol:                tracer.SSH,
+		Model:                   "gpt-4o",
+		Provider:                OpenAI,
+		CustomPrompt:            "custom prompt",
+		InputValidationEnabled:  true,
 		OutputValidationEnabled: true,
-		InputValidationPrompt: "test input validation",
-		OutputValidationPrompt: "test output validation",
-		
+		InputValidationPrompt:   "test input validation",
+		OutputValidationPrompt:  "test output validation",
 	}
 
 	openAIGPTVirtualTerminal := InitLLMHoneypot(llmHoneypot)
@@ -961,17 +960,16 @@ func TestExecuteModelPassAllValidations(t *testing.T) {
 	)
 
 	llmHoneypot := LLMHoneypot{
-		Histories:    make([]Message, 0),
-		OpenAIKey:    "sdjdnklfjndslkjanfk",
-		Protocol:     tracer.SSH,
-		Model:        "gpt-4o",
-		Provider:     OpenAI,
-		CustomPrompt: "custom prompt",
-		InputValidationEnabled: true,
+		Histories:               make([]Message, 0),
+		OpenAIKey:               "sdjdnklfjndslkjanfk",
+		Protocol:                tracer.SSH,
+		Model:                   "gpt-4o",
+		Provider:                OpenAI,
+		CustomPrompt:            "custom prompt",
+		InputValidationEnabled:  true,
 		OutputValidationEnabled: true,
-		InputValidationPrompt: "test input validation",
-		OutputValidationPrompt: "test output validation",
-		
+		InputValidationPrompt:   "test input validation",
+		OutputValidationPrompt:  "test output validation",
 	}
 
 	openAIGPTVirtualTerminal := InitLLMHoneypot(llmHoneypot)
@@ -1031,4 +1029,32 @@ func TestPythonHFCallerTimeout(t *testing.T) {
 
 	// Then
 	assert.ErrorContains(t, err, "python-hf timed out after 100ms")
+}
+
+func TestExecuteModelPythonHFRejectsValidation(t *testing.T) {
+	// Given
+	writePythonHFScript(t, "print('should not run', end='')\n")
+	for _, llmHoneypot := range []LLMHoneypot{
+		{Provider: PythonHF, Protocol: tracer.SSH, InputValidationEnabled: true},
+		{Provider: PythonHF, Protocol: tracer.SSH, OutputValidationEnabled: true},
+	} {
+		// When
+		_, err := InitLLMHoneypot(llmHoneypot).ExecuteModel("whoami")
+
+		// Then
+		assert.EqualError(t, err, "input/output validation is not supported by the python-hf provider")
+	}
+}
+
+func TestExecuteModelPythonHFWithoutValidation(t *testing.T) {
+	// Given
+	writePythonHFScript(t, "import sys\nprint('out:' + sys.stdin.read(), end='')\n")
+	llmHoneypot := LLMHoneypot{Provider: PythonHF, Protocol: tracer.SSH}
+
+	// When
+	str, err := InitLLMHoneypot(llmHoneypot).ExecuteModel("whoami")
+
+	// Then
+	assert.Nil(t, err)
+	assert.Equal(t, "out:whoami", str)
 }

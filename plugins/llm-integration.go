@@ -1,6 +1,5 @@
 package plugins
 
-
 import (
 	"bytes"
 	"context"
@@ -84,7 +83,6 @@ const (
 	ASSISTANT
 )
 
-
 var (
 	pythonHFScript  = "plugins/python_hf.py"
 	pythonHFTimeout = 30 * time.Second
@@ -115,14 +113,12 @@ func (llmHoneypot *LLMHoneypot) pythonHFCaller(command string) (string, error) {
 	return string(out), nil
 }
 
-
-
 func (role Role) String() string {
 	return [...]string{"system", "user", "assistant"}[role]
 }
 
-
 type LLMProvider int
+
 const (
 	Ollama LLMProvider = iota
 	OpenAI
@@ -360,6 +356,13 @@ func (llmHoneypot *LLMHoneypot) ExecuteModel(command string) (string, error) {
 	var err error
 	var response string
 	var prompt []Message
+
+	// python-hf forwards only the command to a Linux emulator, which cannot
+	// answer the guardrail classification prompts, so refuse rather than
+	// silently skip validation.
+	if llmHoneypot.Provider == PythonHF && (llmHoneypot.InputValidationEnabled || llmHoneypot.OutputValidationEnabled) {
+		return "", errors.New("input/output validation is not supported by the python-hf provider")
+	}
 
 	if llmHoneypot.InputValidationEnabled {
 		err = llmHoneypot.isInputValid(command)
