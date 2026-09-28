@@ -1,7 +1,7 @@
 import sys
 from gradio_client import Client
 
-client = Client("WillemVH/LinuxEmulator")
+client = Client("WillemVH/LinuxEmulator", verbose=False)
 
 command = sys.stdin.read().strip()
 

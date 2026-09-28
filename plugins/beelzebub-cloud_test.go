@@ -268,28 +268,33 @@ func TestVerifyConfigurationsChanged(t *testing.T) {
 	)
 
 	var exitInvoked bool = false
-	exitCalled := make(chan bool)
+	exitCalled := make(chan bool, 1)
 
 	exitFunction = func(c int) {
 		exitInvoked = true
-		exitCalled <- true
+		// The mocked exit does not stop the polling loop, so never block here.
+		select {
+		case exitCalled <- true:
+		default:
+		}
 	}
 
 	beelzebubCloud := InitBeelzebubCloud(uri, "sdjdnklfjndslkjanfk", false)
 	beelzebubCloud.client = client
 	beelzebubCloud.PollingInterval = 100 * time.Millisecond
 
+	// The loop outlives the test, so report errors on a channel instead of t.Errorf.
+	errCh := make(chan error, 1)
 	go func() {
-		err := beelzebubCloud.verifyConfigurationsChanged()
-		if err != nil {
-			t.Errorf("verifyConfigurationsChanged returned with error: %v", err)
-		}
+		errCh <- beelzebubCloud.verifyConfigurationsChanged()
 	}()
 
 	select {
 	case <-exitCalled:
 		assert.True(t, exitInvoked, "exitFunction should have been invoked")
 		assert.Greater(t, callCount, 1, "Should have made at least 2 API calls")
+	case err := <-errCh:
+		t.Fatalf("verifyConfigurationsChanged returned with error: %v", err)
 	case <-time.After(2 * time.Second):
 		t.Fatal("Test timed out waiting for exitFunction to be called")
 	}

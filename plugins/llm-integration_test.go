@@ -8,7 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"testing"
+	"time"
 )
 
 const SystemPromptLen = 4
@@ -979,4 +982,53 @@ func TestExecuteModelPassAllValidations(t *testing.T) {
 
 	//Then
 	assert.Nil(t, err)
+}
+func writePythonHFScript(t *testing.T, body string) {
+	if _, err := exec.LookPath("python3"); err != nil {
+		t.Skip("python3 not available")
+	}
+	script := filepath.Join(t.TempDir(), "python_hf.py")
+	assert.Nil(t, os.WriteFile(script, []byte(body), 0o600))
+	t.Setenv("PYTHON_HF_SCRIPT", script)
+}
+
+func TestPythonHFCallerSuccess(t *testing.T) {
+	// Given
+	writePythonHFScript(t, "import sys\nprint('out:' + sys.stdin.read(), end='')\n")
+	llmHoneypot := LLMHoneypot{Provider: PythonHF}
+
+	// When
+	str, err := llmHoneypot.pythonHFCaller("whoami")
+
+	// Then
+	assert.Nil(t, err)
+	assert.Equal(t, "out:whoami", str)
+}
+
+func TestPythonHFCallerIncludesStderr(t *testing.T) {
+	// Given
+	writePythonHFScript(t, "import sys\nsys.stderr.write('Could not fetch config')\nsys.exit(1)\n")
+	llmHoneypot := LLMHoneypot{Provider: PythonHF}
+
+	// When
+	_, err := llmHoneypot.pythonHFCaller("whoami")
+
+	// Then
+	assert.ErrorContains(t, err, "exit status 1")
+	assert.ErrorContains(t, err, "Could not fetch config")
+}
+
+func TestPythonHFCallerTimeout(t *testing.T) {
+	// Given
+	writePythonHFScript(t, "import time\ntime.sleep(5)\n")
+	oldTimeout := pythonHFTimeout
+	pythonHFTimeout = 100 * time.Millisecond
+	defer func() { pythonHFTimeout = oldTimeout }()
+	llmHoneypot := LLMHoneypot{Provider: PythonHF}
+
+	// When
+	_, err := llmHoneypot.pythonHFCaller("whoami")
+
+	// Then
+	assert.ErrorContains(t, err, "python-hf timed out after 100ms")
 }

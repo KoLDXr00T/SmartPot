@@ -2,7 +2,8 @@ package plugins
 
 
 import (
-	"os/exec"
+	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,8 +12,10 @@ import (
 	"github.com/mariocandela/beelzebub/v3/tracer"
 	log "github.com/sirupsen/logrus"
 	"os"
+	"os/exec"
 	"regexp"
 	"strings"
+	"time"
 )
 
 const (
@@ -82,13 +85,31 @@ const (
 )
 
 
+var (
+	pythonHFScript  = "plugins/python_hf.py"
+	pythonHFTimeout = 30 * time.Second
+)
+
 func (llmHoneypot *LLMHoneypot) pythonHFCaller(command string) (string, error) {
-	cmd := exec.Command("python3", "plugins/python_hf.py")
+	script := pythonHFScript
+	if os.Getenv("PYTHON_HF_SCRIPT") != "" {
+		script = os.Getenv("PYTHON_HF_SCRIPT")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), pythonHFTimeout)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "python3", script)
 	cmd.Stdin = strings.NewReader(command)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
 
 	out, err := cmd.Output()
+	if ctx.Err() == context.DeadlineExceeded {
+		return "", fmt.Errorf("python-hf timed out after %s", pythonHFTimeout)
+	}
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("python-hf: %w: %s", err, strings.TrimSpace(stderr.String()))
 	}
 
 	return string(out), nil
