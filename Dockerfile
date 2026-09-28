@@ -20,10 +20,15 @@ WORKDIR /dist
 
 RUN cp /build/main .
 
-# Use scratch image as finally tiny container 
-FROM scratch
+# Python runtime for the python-hf LLM provider (plugins/python_hf.py)
+FROM python:3.13-slim
 
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+WORKDIR /
+
+COPY plugins/requirements.txt /plugins/requirements.txt
+RUN pip install --no-cache-dir -r /plugins/requirements.txt
+
+COPY plugins/python_hf.py /plugins/python_hf.py
 COPY --from=builder /dist/main /
 
 ENTRYPOINT ["/main"]
