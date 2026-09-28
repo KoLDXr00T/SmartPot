@@ -341,6 +341,16 @@ plugin:
    prompt: "You will act as an Ubuntu Linux terminal. The user will type commands, and you are to reply with what the terminal should show. Your responses must be contained within a single code block."
 ```
 
+Example with a Hugging Face Space (`llmProvider: "python-hf"`). See [docs/python-hf-provider.md](docs/python-hf-provider.md) for setup and known limitations:
+
+```yaml
+commands:
+  - regex: "^(.+)$"
+    plugin: "LLMHoneypot"
+plugin:
+   llmProvider: "python-hf"
+```
+
 ###### SSH Honeypot
 
 ###### ssh-22.yaml
