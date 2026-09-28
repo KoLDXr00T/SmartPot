@@ -1,267 +1,201 @@
-# Beelzebub
+# SmartPot
 
+SmartPot is a low-code honeypot built on [Beelzebub](https://github.com/mariocandela/beelzebub).
+You describe fake services in YAML (SSH, HTTP, TCP and MCP), and an LLM can play the
+part of a real system for any request you don't script yourself. Attackers get a
+convincing, interactive target, while SmartPot itself never executes what they type.
 
-[![CI](https://github.com/mariocandela/beelzebub/actions/workflows/ci.yml/badge.svg)](https://github.com/mariocandela/beelzebub/actions/workflows/ci.yml) [![Docker](https://github.com/mariocandela/beelzebub/actions/workflows/docker-image.yml/badge.svg)](https://github.com/mariocandela/beelzebub/actions/workflows/docker-image.yml) [![codeql](https://github.com/mariocandela/beelzebub/actions/workflows/codeql.yml/badge.svg)](https://github.com/mariocandela/beelzebub/actions/workflows/codeql.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/mariocandela/beelzebub/v3)](https://goreportcard.com/report/github.com/mariocandela/beelzebub/v3)
-[![codecov](https://codecov.io/gh/mariocandela/beelzebub/graph/badge.svg?token=8XTK7D4WHE)](https://codecov.io/gh/mariocandela/beelzebub)
-[![Go Reference](https://pkg.go.dev/badge/github.com/mariocandela/beelzebub/v3.svg)](https://pkg.go.dev/github.com/mariocandela/beelzebub/v3)
-[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/mariocandela/beelzebub)](https://archestra.ai/mcp-catalog/mariocandela__beelzebub)
-[![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
+![LLM honeypot demo](https://github.com/user-attachments/assets/4dbb9a67-6c12-49c5-82ac-9b3e340406ca)
 
-## Overview
+## What's different from upstream Beelzebub
 
-Beelzebub is an advanced honeypot framework designed to provide a highly secure environment for detecting and analyzing cyber attacks. It offers a low code approach for easy implementation and uses AI to mimic the behavior of a high-interaction honeypot.
+- **`python-hf` LLM provider:** backs the LLM plugin with a Hugging Face Space
+  instead of OpenAI or Ollama. See [docs/python-hf-provider.md](docs/python-hf-provider.md)
+  for setup and known limitations. The Space it currently uses is asleep, so this
+  provider isn't answering right now.
+- **Docker image includes Python** (`python:3.13-slim` instead of `scratch`) so that
+  provider can run.
+- **The SSH honeypot on port 22 uses `python-hf`** for any command without a scripted reply.
 
-![github beelzebub - inception program](https://github.com/user-attachments/assets/e180d602-6de9-4c48-92ad-eb0ef3c5322d)
+## Features
 
-## 🌍 Global Threat Intelligence Community
+- **YAML services:** one file per service in `configurations/services/`.
+- **LLM-backed responses:** OpenAI, Ollama or `python-hf`, with optional
+  prompt-injection guardrails (OpenAI and Ollama only).
+- **Protocols:** SSH, HTTP/HTTPS, TCP, and MCP (to catch prompt injection against
+  LLM agents).
+- **Observability:** Prometheus metrics, JSON logs, optional RabbitMQ event
+  tracing, and an [ELK integration](https://www.elastic.co/docs/reference/integrations/beelzebub).
+- **Deployment:** Docker Compose, a plain Go binary, or the Helm chart in `beelzebub-chart/`.
 
-Our mission is to establish a collaborative ecosystem of security researchers and white hat professionals worldwide, dedicated to creating a distributed honeypot network that identifies emerging malware, discovers zero-day vulnerabilities, and neutralizes active botnets. 
+## Quick start
 
-For a comprehensive overview of our distributed threat intelligence framework and community vision, please refer to our white paper:
-
-[![White Paper](https://img.shields.io/badge/White_Paper-v1.0-blue?style=for-the-badge)](https://github.com/beelzebub-labs/white-paper/)
-
-*The white paper includes information on how to join our Discord community and contribute to the global threat intelligence network.* 
-
-## Key Features
-
-Beelzebub offers a wide range of features to enhance your honeypot environment:
-
-- Low-code configuration: YAML-based, modular service definition
-- LLM integration: The LLM convincingly simulates a real system, creating high-interaction honeypot experiences, while actually maintaining low-interaction architecture for enhanced security and easy management.
-- Multi-protocol support: SSH, HTTP, TCP, MCP(Detect prompt injection against LLM agents)
-- Prometheus metrics & observability 
-- Docker & Kubernetes ready
-- ELK stack ready, docs: [Official ELK integration](https://www.elastic.co/docs/reference/integrations/beelzebub)
-
-## LLM Honeypot Demo
-![demo-beelzebub](https://github.com/user-attachments/assets/4dbb9a67-6c12-49c5-82ac-9b3e340406ca)
-
-## Code Quality
-
-We are strongly committed to maintaining high code quality in the Beelzebub project. Our development workflow includes comprehensive testing, code reviews, static analysis, and continuous integration to ensure the reliability and maintainability of the codebase.
-
-### What We Do
-
-* **Automated Testing:**
-  Both unit and integration tests are run on every pull request to catch regressions and ensure stability.
-
-* **Static Analysis:**
-  We use tools like Go Report Card and CodeQL to automatically check for code quality, style, and security issues.
-
-* **Code Coverage:**
-  Our test coverage is monitored with [Codecov](https://codecov.io/gh/mariocandela/beelzebub), and we aim for extensive coverage of all core components.
-
-* **Continuous Integration:**
-  Every commit triggers automated CI pipelines on GitHub Actions, which run all tests and quality checks.
-
-* **Code Reviews:**
-  All new contributions undergo peer review to maintain consistency and high standards across the project.
-
-## Quick Start
-
-You can run Beelzebub via Docker, Go compiler(cross device), or Helm (Kubernetes).
-
-### Using Docker Compose
-
-1. Build the Docker images:
-
-   ```bash
-   $ docker compose build
-   ```
-
-2. Start Beelzebub in detached mode:
-
-   ```bash
-   $ docker compose up -d
-   ```
-
-
-### Using Go Compiler
-
-1. Download the necessary Go modules:
-
-   ```bash
-   $ go mod download
-   ```
-
-2. Build the Beelzebub executable:
-
-   ```bash
-   $ go build
-   ```
-
-3. Run Beelzebub:
-
-   ```bash
-   $ ./beelzebub
-   ```
-
-### Deploy on kubernetes cluster using helm
-
-1. Install helm
-
-2. Deploy beelzebub:
-
-   ```bash
-   $ helm install beelzebub ./beelzebub-chart
-   ```
-
-3. Next release
-
-   ```bash
-   $ helm upgrade beelzebub ./beelzebub-chart
-   ```
-
-## Example Configuration
-
-Beelzebub allows easy configuration for different services and ports. Simply create a new file for each service/port within the `/configurations/services` directory.
-
-To execute Beelzebub with your custom path, use the following command:
+### Docker Compose
 
 ```bash
-$ ./beelzebub --confCore ./configurations/beelzebub.yaml --confServices ./configurations/services/
+make beelzebub.start   # docker compose build && docker compose up -d
+make beelzebub.stop    # docker compose down
 ```
 
-Here are some example configurations for different honeypot scenarios:
+`configurations/` is mounted into the container, so config changes need only a
+restart, not a rebuild. Set `OPEN_AI_SECRET_KEY` in your environment to use the
+OpenAI-backed services.
 
-### MCP Honeypot
+> The Compose file publishes 22, 2222, 80, 8080, 3306 and 2112 (plus 8081, which no
+> bundled service uses). The MCP honeypot listens on 8000 inside the container but
+> isn't published; add `"8000:8000"` to `docker-compose.yml` to expose it.
 
-#### Why choose an MCP Honeypot?
+### Go
 
-An MCP honeypot is a **decoy tool** that the agent should never invoke under normal circumstances. Integrating this strategy into your agent pipeline offers three key benefits:
+Requires Go 1.24+.
 
-* **Real-time detection of guardrail bypass attempts.**
-  
-  Instantly identify when a prompt injection attack successfully convinces the agent to invoke a restricted tool.
-* **Automatic collection of real attack prompts for guardrail fine-tuning.**
-  
-   Every activation logs genuine malicious prompts, enabling continuous improvement of your filtering mechanisms.
-* **Continuous monitoring of attack trends through key metrics (HAR, TPR, MTP).**
-  
-   Track exploit frequency and system resilience using objective, actionable measurements.
+```bash
+go build
+./beelzebub
+```
 
-![video-mcp-diagram](https://github.com/user-attachments/assets/e04fd19e-9537-427e-9131-9bee31d8ebad)
+For `python-hf`, also run `pip install -r plugins/requirements.txt` and start the
+binary from the repo root (or set `PYTHON_HF_SCRIPT`).
 
-##### Example MCP Honeypot Configuration
+### Kubernetes (Helm)
 
-###### mcp-8000.yaml
+```bash
+helm install beelzebub ./beelzebub-chart
+helm upgrade beelzebub ./beelzebub-chart
+```
+
+The chart pulls a published image, so it won't have the `python-hf` changes until
+an image built from this repo is pushed to its registry.
+
+## Bundled services
+
+| File | Port | What it pretends to be | Responses |
+|---|---|---|---|
+| `ssh-22.yaml` | 22 | Ubuntu SSH | Scripted replies for a few commands, `python-hf` for the rest |
+| `ssh-2222.yaml` | 2222 | Ubuntu SSH | Everything from OpenAI `gpt-4o` |
+| `http-80.yaml` | 80 | WordPress 6.0 | Scripted index page, OpenAI for all other paths |
+| `http-8080.yaml` | 8080 | Apache with Basic auth | Always `401 Unauthorized` |
+| `tcp-3306.yaml` | 3306 | MySQL 8.0.29 | Banner only |
+| `mcp-8000.yaml` | 8000 | MCP server with admin tools | Scripted tool results |
+
+The sample OpenAI keys (`sk-proj-123456`) are placeholders. Use `OPEN_AI_SECRET_KEY`
+or put a real key in the file.
+
+## Configuration
+
+### Command-line flags
+
+| Flag | Default | Purpose |
+|---|---|---|
+| `--confCore` | `./configurations/beelzebub.yaml` | Core config file |
+| `--confServices` | `./configurations/services/` | Directory of service files |
+| `--memLimitMiB` | `100` | Go memory limit; `-1` uses the system default |
+
+### Core config (`configurations/beelzebub.yaml`)
+
+```yaml
+core:
+  logging:
+    debug: false
+    debugReportCaller: false
+    logDisableTimestamp: true
+    logsPath: ./logs
+  tracings:
+    rabbit-mq:
+      enabled: false
+      uri: ""
+  prometheus:
+    path: "/metrics"
+    port: ":2112"
+  beelzebub-cloud:
+    enabled: false
+    uri: ""
+    auth-token: ""
+```
+
+### Service files
+
+Every file needs `apiVersion: "v1"`, `protocol` (`ssh`, `http`, `tcp` or `mcp`),
+`address` (for example `":22"`) and a `description`.
+
+**Commands** (`ssh`, `http`) are checked in order, and the first `regex` that matches wins:
+
+| Field | Applies to | Purpose |
+|---|---|---|
+| `regex` | ssh, http | Matched against the command or request path |
+| `handler` | ssh, http | Fixed response text |
+| `plugin` | ssh, http | `"LLMHoneypot"` to answer with the LLM instead of `handler` |
+| `headers`, `statusCode` | http | Response headers and status |
+| `name` | ssh, http | Label recorded in events |
+
+Put a catch-all such as `"^(.+)$"` last, or unmatched SSH commands get no reply at all.
+
+**Other service fields:**
+
+| Field | Applies to | Purpose |
+|---|---|---|
+| `serverVersion`, `serverName` | ssh | SSH version string and shell prompt host name |
+| `passwordRegex` | ssh | Passwords that are "accepted" |
+| `deadlineTimeoutSeconds` | ssh, tcp | Session timeout |
+| `banner` | tcp | Text sent on connect |
+| `fallbackCommand` | http | Response when no command matches |
+| `tlsCertPath`, `tlsKeyPath` | http | Serve HTTPS when both are set |
+| `tools` | mcp | Decoy tools, see below |
+
+**LLM plugin** (`plugin:` block at the service level):
+
+| Field | Purpose |
+|---|---|
+| `llmProvider` | `openai`, `ollama` or `python-hf` |
+| `llmModel` | Model name, for example `gpt-4o` or `codellama:7b` |
+| `openAISecretKey` | OpenAI key; the `OPEN_AI_SECRET_KEY` env var overrides it |
+| `host` | Custom API endpoint (defaults to OpenAI's API or `http://localhost:11434/api/chat`) |
+| `prompt` | Replaces the built-in system prompt |
+| `inputValidationEnabled`, `inputValidationPrompt` | Ask the LLM to reject prompt-injection attempts before answering |
+| `outputValidationEnabled`, `outputValidationPrompt` | Ask the LLM to reject responses that leak instructions or secrets |
+
+Validation isn't supported with `python-hf`; enabling it makes every LLM call fail.
+
+## Examples
+
+### SSH answered by an LLM
 
 ```yaml
 apiVersion: "v1"
-protocol: "mcp"
-address: ":8000"
-description: "MCP Honeypot"
-tools:
-  - name: "tool:user-account-manager"
-    description: "Tool for querying and modifying user account details. Requires administrator privileges."
-    params:
-      - name: "user_id"
-        description: "The ID of the user account to manage."
-      - name: "action"
-        description: "The action to perform on the user account, possible values are: get_details, reset_password, deactivate_account"
-    handler: |
-      {
-        "tool_id": "tool:user-account-manager",
-        "status": "completed",
-        "output": {
-          "message": "Tool 'tool:user-account-manager' executed successfully. Results are pending internal processing and will be logged.",
-          "result": {
-            "operation_status": "success",
-            "details": "email: kirsten@gmail.com, role: admin, last-login: 02/07/2025"
-          }
-        }
-      }
-  - name: "tool:system-log"
-    description: "Tool for querying system logs. Requires administrator privileges."
-    params:
-      - name: "filter"
-        description: "The input used to filter the logs."
-    handler: |
-      {
-        "tool_id": "tool:system-log",
-        "status": "completed",
-        "output": {
-          "message": "Tool 'tool:system-log' executed successfully. Results are pending internal processing and will be logged.",
-          "result": {
-            "operation_status": "success",
-            "details": "Info: email: kirsten@gmail.com, last-login: 02/07/2025"
-          }
-        }
-      }
-```
-
-#### Invoke remotely: beelzebub:port/mcp (Streamable HTTPServer).
-
-### HTTP Honeypot
-
-###### http-80.yaml
-
-```yaml
-apiVersion: "v1"
-protocol: "http"
-address: ":80"
-description: "Wordpress 6.0"
+protocol: "ssh"
+address: ":2222"
+description: "SSH interactive OpenAI GPT-4o"
 commands:
-  - regex: "^(/index.php|/index.html|/)$"
-    handler:
-      <html>
-        <header>
-          <title>Wordpress 6 test page</title>
-        </header>
-        <body>
-          <h1>Hello from Wordpress</h1>
-        </body>
-      </html>
-    headers:
-      - "Content-Type: text/html"
-      - "Server: Apache/2.4.53 (Debian)"
-      - "X-Powered-By: PHP/7.4.29"
-    statusCode: 200
-  - regex: "^(/wp-login.php|/wp-admin)$"
-    handler:
-      <html>
-        <header>
-          <title>Wordpress 6 test page</title>
-        </header>
-        <body>
-          <form action="" method="post">
-            <label for="uname"><b>Username</b></label>
-            <input type="text" placeholder="Enter Username" name="uname" required>
-
-            <label for="psw"><b>Password</b></label>
-            <input type="password" placeholder="Enter Password" name="psw" required>
-
-            <button type="submit">Login</button>
-          </form>
-        </body>
-      </html>
-    headers:
-      - "Content-Type: text/html"
-      - "Server: Apache/2.4.53 (Debian)"
-      - "X-Powered-By: PHP/7.4.29"
-    statusCode: 200
-  - regex: "^.*$"
-    handler:
-      <html>
-        <header>
-          <title>404</title>
-        </header>
-        <body>
-          <h1>Not found!</h1>
-        </body>
-      </html>
-    headers:
-      - "Content-Type: text/html"
-      - "Server: Apache/2.4.53 (Debian)"
-      - "X-Powered-By: PHP/7.4.29"
-    statusCode: 404
+  - regex: "^(.+)$"
+    plugin: "LLMHoneypot"
+serverVersion: "OpenSSH"
+serverName: "ubuntu"
+passwordRegex: "^(root|qwerty|123456|postgres)$"
+deadlineTimeoutSeconds: 60
+plugin:
+  llmProvider: "openai"          # or "ollama" / "python-hf"
+  llmModel: "gpt-4o"
+  openAISecretKey: "sk-proj-123456"
 ```
 
-### HTTP Honeypot
+For Ollama, set `llmProvider: "ollama"`, a model such as `llmModel: "codellama:7b"`,
+and `host` if Ollama isn't on `localhost:11434`.
 
-###### http-8080.yaml
+### SSH with scripted replies and an LLM fallback
+
+```yaml
+commands:
+  - regex: "^ls$"
+    handler: "Documents Images  Desktop Downloads .m2 .kube .ssh  .docker"
+  - regex: "^uname -m$"
+    handler: "x86_64"
+  - regex: "^(.+)$"              # everything else
+    plugin: "LLMHoneypot"
+plugin:
+  llmProvider: "python-hf"
+```
+
+### HTTP
 
 ```yaml
 apiVersion: "v1"
@@ -277,147 +211,65 @@ commands:
     statusCode: 401
 ```
 
-### SSH Honeypot
+See `configurations/services/http-80.yaml` for a fake WordPress site that uses the LLM
+for unknown paths.
 
-###### LLM Honeypots
+### MCP decoy tools
 
-Follow a SSH LLM Honeypot using OpenAI as provider LLM:
-
-```yaml
-apiVersion: "v1"
-protocol: "ssh"
-address: ":2222"
-description: "SSH interactive OpenAI  GPT-4"
-commands:
-  - regex: "^(.+)$"
-    plugin: "LLMHoneypot"
-serverVersion: "OpenSSH"
-serverName: "ubuntu"
-passwordRegex: "^(root|qwerty|Smoker666|123456|jenkins|minecraft|sinus|alex|postgres|Ly123456)$"
-deadlineTimeoutSeconds: 60
-plugin:
-   llmProvider: "openai"
-   llmModel: "gpt-4o" #Models https://platform.openai.com/docs/models
-   openAISecretKey: "sk-proj-123456"
-```
-
-Examples with local Ollama instance using model codellama:7b:
+An MCP honeypot exposes tools that a well-behaved agent should never call. When
+one is called, a prompt injection has got past your agent's guardrails, and the
+prompt that did it is logged.
 
 ```yaml
 apiVersion: "v1"
-protocol: "ssh"
-address: ":2222"
-description: "SSH Ollama Llama3"
-commands:
-  - regex: "^(.+)$"
-    plugin: "LLMHoneypot"
-serverVersion: "OpenSSH"
-serverName: "ubuntu"
-passwordRegex: "^(root|qwerty|Smoker666|123456|jenkins|minecraft|sinus|alex|postgres|Ly123456)$"
-deadlineTimeoutSeconds: 60
-plugin:
-   llmProvider: "ollama"
-   llmModel: "codellama:7b" #Models https://ollama.com/search
-   host: "http://example.com/api/chat" #default http://localhost:11434/api/chat
-```
-Example with custom prompt:
-
-```yaml
-apiVersion: "v1"
-protocol: "ssh"
-address: ":2222"
-description: "SSH interactive OpenAI  GPT-4"
-commands:
-  - regex: "^(.+)$"
-    plugin: "LLMHoneypot"
-serverVersion: "OpenSSH"
-serverName: "ubuntu"
-passwordRegex: "^(root|qwerty|Smoker666|123456|jenkins|minecraft|sinus|alex|postgres|Ly123456)$"
-deadlineTimeoutSeconds: 60
-plugin:
-   llmProvider: "openai"
-   llmModel: "gpt-4o"
-   openAISecretKey: "sk-proj-123456"
-   prompt: "You will act as an Ubuntu Linux terminal. The user will type commands, and you are to reply with what the terminal should show. Your responses must be contained within a single code block."
+protocol: "mcp"
+address: ":8000"
+description: "MCP Honeypot"
+tools:
+  - name: "tool:user-account-manager"
+    description: "Tool for querying and modifying user account details. Requires administrator privileges."
+    params:
+      - name: "user_id"
+        description: "The ID of the user account to manage."
+      - name: "action"
+        description: "get_details, reset_password or deactivate_account"
+    handler: |
+      {"tool_id": "tool:user-account-manager", "status": "completed",
+       "output": {"result": {"operation_status": "success",
+                             "details": "email: kirsten@gmail.com, role: admin"}}}
 ```
 
-Example with a Hugging Face Space (`llmProvider: "python-hf"`). See [docs/python-hf-provider.md](docs/python-hf-provider.md) for setup and known limitations:
+Tools also accept optional MCP `annotations` (`title`, `readOnlyHint`,
+`destructiveHint`, `idempotentHint`, `openWorldHint`). Agents connect over
+streamable HTTP at `http://<host>:8000/mcp`.
 
-```yaml
-commands:
-  - regex: "^(.+)$"
-    plugin: "LLMHoneypot"
-plugin:
-   llmProvider: "python-hf"
-```
+## Monitoring
 
-###### SSH Honeypot
+- **Prometheus:** metrics at `:2112/metrics`, including total events and events per
+  protocol (SSH, HTTP, TCP, MCP).
+- **Logs:** JSON, written to `logsPath`.
+- **RabbitMQ:** set `tracings.rabbit-mq.enabled: true` and `uri` in the core
+  config to publish every event.
 
-###### ssh-22.yaml
-
-```yaml
-apiVersion: "v1"
-protocol: "ssh"
-address: ":22"
-
-
-description: "SSH interactive"
-commands:
-  - regex: "^ls$"
-    handler: "Documents Images Desktop Downloads .m2 .kube .ssh .docker"
-  - regex: "^pwd$"
-    handler: "/home/"
-  - regex: "^uname -m$"
-    handler: "x86_64"
-  - regex: "^docker ps$"
-    handler: "CONTAINER ID IMAGE COMMAND CREATED STATUS PORTS NAMES"
-  - regex: "^docker .*$"
-    handler: "Error response from daemon: dial unix docker.raw.sock: connect: connection refused"
-  - regex: "^uname$"
-    handler: "Linux"
-  - regex: "^ps$"
-    handler: "PID TTY TIME CMD\n21642 ttys000 0:00.07 /bin/dockerd"
-  - regex: "^(.+)$"
-    handler: "command not found"
-serverVersion: "OpenSSH"
-serverName: "ubuntu"
-passwordRegex: "^(root|qwerty|Smoker666)$"
-deadlineTimeoutSeconds: 60
-```
-
-## Testing
-
-Maintaining excellent code quality is essential for security-focused projects like Beelzebub. We welcome all contributors who share our commitment to robust, readable, and reliable code!
-
-### Unit Tests
-
-For contributor, we have a comprehensive suite of unit/integration tests that cover the core functionality of Beelzebub. To run the unit tests, use the following command:
+## Development
 
 ```bash
-$ make test.unit
+make test.unit                 # go test ./...
+make test.dependencies.start   # start integration test dependencies
+make test.integration          # INTEGRATION=1 go test ./...
+make test.dependencies.down
 ```
 
-### Integration Tests
+The `python-hf` tests use a stand-in script and need `python3` on the `PATH`; they
+are skipped otherwise.
 
-To run integration tests:
+## Credits and license
 
-```bash
-$ make test.dependencies.start
-$ make test.integration
-$ make test.dependencies.down
-```
+SmartPot is a fork of [Beelzebub](https://github.com/mariocandela/beelzebub) by
+Mario Candela and contributors. For upstream's CI status, the Beelzebub
+[white paper](https://github.com/beelzebub-labs/white-paper/) and community, and
+upstream sponsors, see the Beelzebub repository. The previous README is kept as
+[README.md.old](README.md.old).
 
-## Contributing
-
-The Beelzebub team welcomes contributions and project participation. Whether you want to report bugs, contribute new features, or have any questions, please refer to our [Contributor Guide](CONTRIBUTING.md) for detailed information. We encourage all participants and maintainers to adhere to our [Code of Conduct](CODE_OF_CONDUCT.md) and foster a supportive and respectful community.
-
-Happy hacking!
-
-## License
-
-Beelzebub is licensed under the [GNU GPL v3 License](LICENSE).
-
-## Supported by
-[![JetBrains logo.](https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg)](https://jb.gg/OpenSourceSupport)
-
-![gitbook logo](https://i.postimg.cc/VNQh5hnk/gitbook.png)
+Licensed under the [GNU GPL v3](LICENSE), as upstream is. See
+[CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
